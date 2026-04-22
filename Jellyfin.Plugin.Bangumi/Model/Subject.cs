@@ -81,8 +81,7 @@ public class Subject
     [JsonIgnore]
     public IEnumerable<string> PopularTags => AllTags
         .OrderByDescending(tag => tag.Count)
-        .Select(tag => tag.Name)
-        .Take(Math.Max(8, AllTags.Count() / 25));
+        .Select(tag => tag.Name);
 
     [JsonIgnore]
     public IEnumerable<string> GenreTags => AllTags

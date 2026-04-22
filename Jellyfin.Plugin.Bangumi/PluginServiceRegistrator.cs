@@ -10,7 +10,7 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
 {
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
-        serviceCollection.AddScoped(typeof(Logger<>));
+        serviceCollection.AddSingleton(typeof(Logger<>));
 
         serviceCollection.AddSingleton<ArchiveData>();
         serviceCollection.AddSingleton<BangumiApi>();

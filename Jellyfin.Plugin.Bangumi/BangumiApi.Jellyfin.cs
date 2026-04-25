@@ -42,7 +42,7 @@ public partial class BangumiApi(ArchiveData archive, OAuthStore store, Logger<Ba
 
     public Task<T?> Post<T>(string url, HttpContent content, CancellationToken token)
     {
-        return Post<T>(url, content, null, token);
+        return Post<T>(url, content, store.GetAvailable()?.AccessToken, token);
     }
 
     public async Task<T?> Post<T>(string url, HttpContent content, string? accessToken, CancellationToken token)

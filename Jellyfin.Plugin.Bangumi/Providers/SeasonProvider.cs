@@ -50,6 +50,9 @@ public class SeasonProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibrar
         var result = new MetadataResult<Season> { ResultLanguage = Constants.Language };
         var localConfiguration = await LocalConfiguration.ForPath(info.Path);
 
+        if (localConfiguration.Skip)
+            return new MetadataResult<Season>();
+
         var seasonPath = Path.GetDirectoryName(info.Path);
 
         var subjectId = 0;
@@ -88,9 +91,11 @@ public class SeasonProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibrar
                 try
                 {
                     //This is the first season to be matched, which means season 1 and any other possible previous season is missing. We can just try match it by name.
+                    var seasonIndex = info.IndexNumber ?? 1;
+                    var chineseOrdinal = ChineseOrdinalChars.GetValueOrDefault(seasonIndex, seasonIndex.ToString());
                     string[] searchNames =
                     [
-                        $"{series.Name} 第{ChineseOrdinalChars[info.IndexNumber ?? 1]}季",
+                        $"{series.Name} 第{chineseOrdinal}季",
                         $"{series.Name} Season {info.IndexNumber}"
                     ];
                     foreach (var searchName in searchNames)

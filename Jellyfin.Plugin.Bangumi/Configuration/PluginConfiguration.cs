@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Plugins;
+﻿using System;
+using System.Collections.Generic;
+using MediaBrowser.Model.Plugins;
 
 namespace Jellyfin.Plugin.Bangumi.Configuration;
 
@@ -61,4 +63,14 @@ public class PluginConfiguration : BasePluginConfiguration
     public string? ProxyServerUrl { get; set; }
 
     public bool UseOriginalTitleFirst { get; set; }
+
+    /// <summary>
+    /// Newline-separated list of tags that should never be written to Jellyfin items.
+    /// </summary>
+    public string TagBlockList { get; set; } = string.Empty;
+
+    public HashSet<string> GetTagBlockSet() =>
+        new HashSet<string>(
+            TagBlockList.Split('\n', System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries),
+            StringComparer.OrdinalIgnoreCase);
 }

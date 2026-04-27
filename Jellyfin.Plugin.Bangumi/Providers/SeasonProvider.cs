@@ -160,7 +160,14 @@ public class SeasonProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibrar
         }
 
         result.Item.Overview = string.IsNullOrEmpty(subject.Summary) ? null : subject.Summary;
-        result.Item.Tags = subject.PopularTags.ToArray();
+        var seasonTagBlock = Configuration.GetTagBlockSet();
+        var seasonExtraTags = new List<string>();
+        if (!string.IsNullOrEmpty(subject.Platform)) seasonExtraTags.Add(subject.Platform);
+        seasonExtraTags.AddRange(subject.MetaTags);
+        result.Item.Tags = subject.PopularTags
+            .Concat(seasonExtraTags.Where(t => !subject.PopularTags.Contains(t, StringComparer.OrdinalIgnoreCase)))
+            .Where(t => !seasonTagBlock.Contains(t))
+            .ToArray();
         result.Item.Genres = subject.GenreTags.ToArray();
 
         if (DateTime.TryParse(subject.AirDate, out var airDate))
@@ -174,6 +181,10 @@ public class SeasonProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibrar
 
         result.Item.HomePageUrl = subject.OfficialWebSite;
         result.Item.EndDate = subject.EndDate;
+
+        var allStudios = subject.AllStudios.ToArray();
+        if (allStudios.Length > 0)
+            result.Item.Studios = allStudios;
 
         if (subject.IsNSFW)
             result.Item.OfficialRating = "X";

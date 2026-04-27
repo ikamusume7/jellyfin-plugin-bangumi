@@ -34,6 +34,9 @@ public class Subject
     [JsonPropertyName("tags")]
     public IEnumerable<Tag> Tags { get; set; } = [];
 
+    [JsonPropertyName("meta_tags")]
+    public IEnumerable<string> MetaTags { get; set; } = [];
+
     [JsonPropertyName("score")]
     public float Score { get; set; }
 
@@ -66,6 +69,7 @@ public class Subject
                 Total = ScoreDetails.Sum(item => item.Value)
             },
             AllTags = Tags,
+            MetaTags = MetaTags,
             IsNSFW = IsNSFW,
             Platform = Platform switch
             {

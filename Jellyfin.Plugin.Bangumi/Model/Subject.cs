@@ -78,6 +78,9 @@ public class Subject
 
     public string? Platform { get; set; }
 
+    [JsonPropertyName("meta_tags")]
+    public IEnumerable<string> MetaTags { get; set; } = [];
+
     [JsonIgnore]
     public IEnumerable<string> PopularTags => AllTags
         .OrderByDescending(tag => tag.Count)
@@ -117,6 +120,45 @@ public class Subject
             return null;
         }
     }
+
+    [JsonIgnore]
+    public string? BroadcastTime => InfoBox?.Get("放送时间");
+
+    [JsonIgnore]
+    public DayOfWeek? BroadcastWeekday
+    {
+        get
+        {
+            var raw = InfoBox?.Get("放送星期");
+            return raw switch
+            {
+                "星期一" or "周一" => DayOfWeek.Monday,
+                "星期二" or "周二" => DayOfWeek.Tuesday,
+                "星期三" or "周三" => DayOfWeek.Wednesday,
+                "星期四" or "周四" => DayOfWeek.Thursday,
+                "星期五" or "周五" => DayOfWeek.Friday,
+                "星期六" or "周六" => DayOfWeek.Saturday,
+                "星期日" or "星期天" or "周日" or "周天" => DayOfWeek.Sunday,
+                _ => null
+            };
+        }
+    }
+
+    /// <summary>Animation studio from infobox (动画制作 or 制作公司).</summary>
+    [JsonIgnore]
+    public string? AnimationStudio => InfoBox?.Get("动画制作") ?? InfoBox?.Get("制作公司");
+
+    /// <summary>
+    /// All production/broadcast entities: 动画制作, 制作公司, 放送电视台, 网络.
+    /// Multiple values per key (newline-separated in the infobox) are each emitted as separate entries.
+    /// </summary>
+    [JsonIgnore]
+    public IEnumerable<string> AllStudios =>
+        new[] { "动画制作", "制作公司", "放送电视台", "网络" }
+            .SelectMany(k => InfoBox?.GetList(k) ?? Enumerable.Empty<string>())
+            .Select(v => v.Trim())
+            .Where(v => !string.IsNullOrEmpty(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
     public static IEnumerable<Subject> SortBySimilarity(IEnumerable<Subject> list, string keyword)
     {

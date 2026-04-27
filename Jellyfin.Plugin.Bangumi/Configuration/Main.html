@@ -236,6 +236,11 @@
                     </label>
                     <div class="fieldDescription">当存在原标题(OriginalTitle)时，优先使用原标题进行搜索，而不是使用翻译后的名称。这可以提高跨平台信息匹配的准确性，特别是对于不同平台翻译不一致的情况。</div>
                 </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="TagBlockList">标签黑名单</label>
+                    <textarea class="emby-textarea" id="TagBlockList" rows="6" placeholder="每行一个标签，刷新元数据时这些标签将不会写入" style="width:100%;box-sizing:border-box;font-family:inherit;resize:vertical;"></textarea>
+                    <div class="fieldDescription">每行填写一个标签名，刷新元数据时 Bangumi 返回的这些标签将被过滤，不再写入 Jellyfin。标签名不区分大小写。</div>
+                </div>
                 <div class="selectContainer">
                     <label class="selectLabel" for="EpisodeParser">剧集解析器</label>
                     <select class="emby-select-withcolor emby-select" id="EpisodeParser" is="emby-select">

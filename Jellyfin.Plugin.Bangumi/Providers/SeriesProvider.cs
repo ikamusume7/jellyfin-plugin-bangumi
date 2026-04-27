@@ -100,18 +100,30 @@ public class SeriesProvider(BangumiApi api, Logger<SeriesProvider> log)
         result.Item.Name = subject.Name;
         result.Item.OriginalTitle = subject.OriginalName;
         result.Item.Overview = string.IsNullOrEmpty(subject.Summary) ? null : subject.Summary;
-        result.Item.Tags = subject.PopularTags.ToArray();
+        var tagBlock = Configuration.GetTagBlockSet();
+        var extraTags = new List<string>();
+        if (!string.IsNullOrEmpty(subject.Platform)) extraTags.Add(subject.Platform);
+        extraTags.AddRange(subject.MetaTags);
+        result.Item.Tags = subject.PopularTags
+            .Concat(extraTags.Where(t => !subject.PopularTags.Contains(t, StringComparer.OrdinalIgnoreCase)))
+            .Where(t => !tagBlock.Contains(t))
+            .ToArray();
         result.Item.Genres = subject.GenreTags.ToArray();
         result.Item.HomePageUrl = subject.OfficialWebSite;
         result.Item.EndDate = subject.EndDate;
 
         if (DateTime.TryParse(subject.AirDate, out var airDate))
         {
-            result.Item.AirTime = subject.AirDate;
-            result.Item.AirDays = [airDate.DayOfWeek];
+            result.Item.AirTime = subject.BroadcastTime ?? subject.AirDate;
+            var weekday = subject.BroadcastWeekday ?? airDate.DayOfWeek;
+            result.Item.AirDays = [weekday];
             result.Item.PremiereDate = airDate;
             result.Item.ProductionYear = airDate.Year;
         }
+
+        var allStudios = subject.AllStudios.ToArray();
+        if (allStudios.Length > 0)
+            result.Item.Studios = allStudios;
 
         if (subject.ProductionYear?.Length == 4)
             result.Item.ProductionYear = int.Parse(subject.ProductionYear);

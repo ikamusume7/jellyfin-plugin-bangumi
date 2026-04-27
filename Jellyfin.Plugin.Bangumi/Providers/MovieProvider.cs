@@ -90,10 +90,21 @@ public class MovieProvider(BangumiApi api, Logger<MovieProvider> log)
         result.Item.Name = subject.Name;
         result.Item.OriginalTitle = subject.OriginalName;
         result.Item.Overview = string.IsNullOrEmpty(subject.Summary) ? null : subject.Summary;
-        result.Item.Tags = subject.PopularTags.ToArray();
+        var tagBlock = Configuration.GetTagBlockSet();
+        var extraTags = new List<string>();
+        if (!string.IsNullOrEmpty(subject.Platform)) extraTags.Add(subject.Platform);
+        extraTags.AddRange(subject.MetaTags);
+        result.Item.Tags = subject.PopularTags
+            .Concat(extraTags.Where(t => !subject.PopularTags.Contains(t, StringComparer.OrdinalIgnoreCase)))
+            .Where(t => !tagBlock.Contains(t))
+            .ToArray();
         result.Item.Genres = subject.GenreTags.ToArray();
         result.Item.HomePageUrl = subject.OfficialWebSite;
         result.Item.EndDate = subject.EndDate;
+
+        var allStudios = subject.AllStudios.ToArray();
+        if (allStudios.Length > 0)
+            result.Item.Studios = allStudios;
 
         if (DateTime.TryParse(subject.AirDate, out var airDate))
             result.Item.PremiereDate = airDate;

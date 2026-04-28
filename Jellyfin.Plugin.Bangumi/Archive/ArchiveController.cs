@@ -53,6 +53,32 @@ public class OAuthController(ArchiveData archive)
     }
 
     /// <summary>
+    /// Rebuild all archive indexes from existing .jsonlines files in the archive directory.
+    /// Use this after manually placing downloaded archive files into the archive folder.
+    /// Required files: subject.jsonlines, episode.jsonlines, character.jsonlines, person.jsonlines,
+    ///   subject-relations.jsonlines, subject-persons.jsonlines
+    /// </summary>
+    [HttpPost("RebuildIndex")]
+    [Authorize]
+    public async Task<ActionResult> RebuildIndex(CancellationToken cancellationToken)
+    {
+        foreach (var store in archive.Stores)
+        {
+            if (!System.IO.File.Exists(store.FilePath))
+                return BadRequest($"Missing file: {store.FileName}. Place all .jsonlines files in {archive.BasePath} first.");
+            await store.GenerateIndex(cancellationToken);
+        }
+
+        await archive.SubjectRelations.GenerateIndex(
+            Path.Join(archive.BasePath, "subject-relations.jsonlines"), cancellationToken);
+        await archive.SubjectEpisodeRelation.GenerateIndex(cancellationToken);
+        await archive.SubjectPersonRelation.GenerateIndex(
+            Path.Join(archive.BasePath, "subject-persons.jsonlines"), cancellationToken);
+
+        return Ok(new { message = "Index rebuilt successfully.", path = archive.BasePath });
+    }
+
+    /// <summary>
     /// Returns the parsed infobox for a subject from the local archive.
     /// Falls back to the Bangumi API if the subject is not in the archive.
     /// </summary>

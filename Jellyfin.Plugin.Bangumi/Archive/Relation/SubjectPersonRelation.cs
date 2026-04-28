@@ -24,6 +24,18 @@ public class SubjectPersonRelation(ArchiveData archive)
         var entry = zipStream.GetEntry("subject-persons.jsonlines");
         if (entry == null) return;
         await using var stream = await entry.OpenAsync(token);
+        await GenerateIndexFromStream(stream, token);
+    }
+
+    public async Task GenerateIndex(string filePath, CancellationToken token)
+    {
+        if (!File.Exists(filePath)) return;
+        await using var stream = File.OpenRead(filePath);
+        await GenerateIndexFromStream(stream, token);
+    }
+
+    private async Task GenerateIndexFromStream(Stream stream, CancellationToken token)
+    {
         using var reader = new StreamReader(stream, Encoding.UTF8);
 
         while (await reader.ReadLineAsync(token) is { } line)

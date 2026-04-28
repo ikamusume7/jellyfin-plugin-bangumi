@@ -26,11 +26,11 @@ public class MusicSongProvider(BangumiApi api, ILibraryManager libraryManager, L
     public async Task<MetadataResult<Audio>> GetMetadata(SongInfo info, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var result = new MetadataResult<Audio> { ResultLanguage = Constants.Language };
+        if (!Configuration.Enabled) return result;
         var episode = await GetSong(info, cancellationToken);
 
         log.Info("metadata for {FilePath}: {EpisodeInfo}", Path.GetFileName(info.Path), episode);
-
-        var result = new MetadataResult<Audio> { ResultLanguage = Constants.Language };
 
         if (episode == null)
             return result;

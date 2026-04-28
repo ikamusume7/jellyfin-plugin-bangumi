@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Plugin.Bangumi.Configuration;
 using Jellyfin.Plugin.Bangumi.Model;
 using MediaBrowser.Controller.Entities;
 using Person = Jellyfin.Plugin.Bangumi.Model.Person;
@@ -22,6 +23,21 @@ public partial class BangumiApi
     private const int PageSize = 50;
     private const int Offset = 20;
 
+    private static PluginConfiguration Configuration => Plugin.Instance!.Configuration;
+
+    /// <summary>
+    /// Per-call offline override. When set, takes precedence over the global OfflineOnly setting.
+    /// Providers set this via <see cref="SetOfflineOverride"/> before calling API methods.
+    /// </summary>
+    private static readonly AsyncLocal<bool?> _offlineOverride = new();
+
+    public static bool OfflineOnly => _offlineOverride.Value ?? Configuration.OfflineOnly;
+
+    /// <summary>
+    /// Set the per-call offline override for the current async context.
+    /// </summary>
+    public static void SetOfflineOverride(bool? value) => _offlineOverride.Value = value;
+
     private static string BaseUrl =>
         string.IsNullOrEmpty(Plugin.Instance?.Configuration?.BaseServerUrl)
             ? "https://api.bgm.tv"
@@ -35,6 +51,8 @@ public partial class BangumiApi
     public async Task<IEnumerable<Subject>> SearchSubject(string keyword, SubjectType? type, CancellationToken token)
     {
         if (string.IsNullOrEmpty(keyword))
+            return [];
+        if (OfflineOnly)
             return [];
         try
         {
@@ -90,6 +108,7 @@ public partial class BangumiApi
         if (subject != null)
             return subject.ToSubject();
 #endif
+        if (OfflineOnly) return null;
         return await Get<Subject>($"{BaseUrl}/v0/subjects/{id}", token);
     }
 
@@ -100,6 +119,7 @@ public partial class BangumiApi
 
     public async Task<string?> GetSubjectImage(int id, string type, CancellationToken token)
     {
+        if (OfflineOnly) return null;
         var imageUrl = await FollowRedirection($"{BaseUrl}/v0/subjects/{id}/image?type={type}", token);
         return imageUrl == "https://lain.bgm.tv/img/no_icon_subject.png" ? null : imageUrl;
     }
@@ -113,6 +133,7 @@ public partial class BangumiApi
             .Select(x => x.ToEpisode());
         if (episodeList.Any()) return episodeList;
 #endif
+        if (OfflineOnly) return null;
 
         var result = await GetSubjectEpisodeListWithOffset(id, type, 0, token);
         if (result == null)
@@ -237,6 +258,7 @@ public partial class BangumiApi
         if (relations.Any())
             return relations;
 #endif
+        if (OfflineOnly) return null;
         return await Get<IEnumerable<RelatedSubject>>($"{BaseUrl}/v0/subjects/{id}/subjects", token);
     }
 
@@ -337,6 +359,7 @@ public partial class BangumiApi
     public async Task<IEnumerable<PersonInfo>> GetSubjectCharacters(int id, CancellationToken token)
     {
         if (id <= 0) return [];
+        if (OfflineOnly) return [];
 
         var characters = await Get<IEnumerable<RelatedCharacter>>($"{BaseUrl}/v0/subjects/{id}/characters", token);
 
@@ -359,6 +382,7 @@ public partial class BangumiApi
         if (relatedPerson.Any())
             return relatedPerson;
 #endif
+        if (OfflineOnly) return null;
         return await Get<IEnumerable<RelatedPerson>>($"{BaseUrl}/v0/subjects/{id}/persons", token);
     }
 
@@ -379,6 +403,7 @@ public partial class BangumiApi
                 airDate < DateTime.Now.Subtract(TimeSpan.FromDays(_plugin.Configuration.DaysBeforeUsingArchiveData)))
                 return episode.ToEpisode();
 #endif
+        if (OfflineOnly) return null;
         return await Get<Episode>($"{BaseUrl}/v0/episodes/{id}", token);
     }
 
@@ -390,6 +415,7 @@ public partial class BangumiApi
         if (person != null)
             return person.ToPersonDetail();
 #endif
+        if (OfflineOnly) return null;
         return await Get<PersonDetail>($"{BaseUrl}/v0/persons/{id}", token);
     }
 
@@ -400,12 +426,14 @@ public partial class BangumiApi
 
     public async Task<string?> GetPersonImage(int id, string type, CancellationToken token)
     {
+        if (OfflineOnly) return null;
         var person = await Get<PersonDetail>($"{BaseUrl}/v0/persons/{id}", token);
         return person?.DefaultImage;
     }
 
     public async Task<IEnumerable<Person>?> SearchPerson(string keyword, CancellationToken token)
     {
+        if (OfflineOnly) return null;
         var searchResult = await Post<DataList<Person>>($"{BaseUrl}/v0/search/persons", new JsonContent(new SearchParams { Keyword = keyword}), token);
         return searchResult?.Data;
     }

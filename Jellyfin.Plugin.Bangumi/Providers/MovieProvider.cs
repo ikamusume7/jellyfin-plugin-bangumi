@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.Bangumi.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -14,7 +15,7 @@ using Jellyfin.Plugin.Bangumi.Parser.AnitomyParser;
 
 namespace Jellyfin.Plugin.Bangumi.Providers;
 
-public class MovieProvider(BangumiApi api, Logger<MovieProvider> log)
+public class MovieProvider(BangumiApi api, Logger<MovieProvider> log, ILibraryManager libraryManager)
     : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
 {
     private static PluginConfiguration Configuration => Plugin.Instance!.Configuration;
@@ -26,8 +27,11 @@ public class MovieProvider(BangumiApi api, Logger<MovieProvider> log)
     public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var baseName = Path.GetFileName(info.Path);
         var result = new MetadataResult<Movie> { ResultLanguage = Constants.Language };
+        var (enabled, offlineOnly) = LibrarySettingsHelper.GetEffectiveSettings(info.Path, libraryManager);
+        if (!enabled) return result;
+        BangumiApi.SetOfflineOverride(offlineOnly);
+        var baseName = Path.GetFileName(info.Path);
 
         if (int.TryParse(info.ProviderIds.GetOrDefault(Constants.ProviderName), out var subjectId))
         {

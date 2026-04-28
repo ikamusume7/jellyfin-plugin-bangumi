@@ -43,6 +43,11 @@ public class SeasonProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibrar
         cancellationToken.ThrowIfCancellationRequested();
         Subject? subject = null;
 
+        var (enabled, offlineOnly) = LibrarySettingsHelper.GetEffectiveSettings(info.Path, libraryManager);
+        if (!enabled)
+            return new MetadataResult<Season>();
+        BangumiApi.SetOfflineOverride(offlineOnly);
+
         if (string.IsNullOrEmpty(info.Path))
             return new MetadataResult<Season>();
 

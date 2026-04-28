@@ -54,6 +54,7 @@ public class PlaybackScrobbler(IUserDataManager userDataManager, OAuthStore stor
 
     private async Task ReportPlaybackStatus(BaseItem item, Guid userId, bool played)
     {
+        if (!Configuration.Enabled) return;
         Episode? episode = null;
         var localConfiguration = await LocalConfiguration.ForPath(item.Path);
         if (!int.TryParse(item.GetProviderId(Constants.ProviderName), out var episodeId))

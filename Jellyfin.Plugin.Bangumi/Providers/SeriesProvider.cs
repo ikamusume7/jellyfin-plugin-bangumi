@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jellyfin.Plugin.Bangumi.Configuration;
 using Jellyfin.Plugin.Bangumi.Model;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -15,7 +16,7 @@ using Jellyfin.Plugin.Bangumi.Parser.AnitomyParser;
 
 namespace Jellyfin.Plugin.Bangumi.Providers;
 
-public class SeriesProvider(BangumiApi api, Logger<SeriesProvider> log)
+public class SeriesProvider(BangumiApi api, Logger<SeriesProvider> log, ILibraryManager libraryManager)
     : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
 {
     private static PluginConfiguration Configuration => Plugin.Instance!.Configuration;
@@ -27,8 +28,11 @@ public class SeriesProvider(BangumiApi api, Logger<SeriesProvider> log)
     public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var baseName = Path.GetFileName(info.Path);
         var result = new MetadataResult<Series> { ResultLanguage = info.MetadataLanguage ?? Constants.Language };
+        var (enabled, offlineOnly) = LibrarySettingsHelper.GetEffectiveSettings(info.Path, libraryManager);
+        if (!enabled) return result;
+        BangumiApi.SetOfflineOverride(offlineOnly);
+        var baseName = Path.GetFileName(info.Path);
         var localConfiguration = await LocalConfiguration.ForPath(info.Path);
 
         var bangumiId = baseName.GetAttributeValue("bangumi");

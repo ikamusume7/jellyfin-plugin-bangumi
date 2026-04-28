@@ -22,6 +22,7 @@ public class MusicArtistProvider(BangumiApi api)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var result = new MetadataResult<MusicArtist> { ResultLanguage = Constants.Language };
+        if (!Plugin.Instance!.Configuration.Enabled) return result;
         if (!int.TryParse(info.ProviderIds?.GetValueOrDefault(Constants.ProviderName), out var personId))
             return result;
         var person = await api.GetPerson(personId, cancellationToken);

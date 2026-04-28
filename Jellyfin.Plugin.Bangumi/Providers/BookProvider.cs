@@ -25,6 +25,7 @@ public class BookProvider(BangumiApi api)
     public async Task<MetadataResult<Book>> GetMetadata(BookInfo info, CancellationToken cancellationToken)
     {
         var result = new MetadataResult<Book> { ResultLanguage = Constants.Language };
+        if (!Configuration.Enabled) return result;
 
         if (!int.TryParse(info.ProviderIds.GetOrDefault(Constants.ProviderName), out var subjectId))
             return result;

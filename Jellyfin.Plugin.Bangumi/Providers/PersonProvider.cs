@@ -21,6 +21,7 @@ public class PersonProvider(BangumiApi api)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var result = new MetadataResult<Person> { ResultLanguage = Constants.Language };
+        if (!Plugin.Instance!.Configuration.Enabled) return result;
         if (!int.TryParse(info.ProviderIds?.GetValueOrDefault(Constants.ProviderName), out var personId))
             return result;
 

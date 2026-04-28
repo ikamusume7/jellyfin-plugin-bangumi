@@ -31,6 +31,9 @@ public class PersonImageProvider(BangumiApi api)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (!Plugin.Instance!.Configuration.Enabled)
+            return [];
+
         if (!int.TryParse(item.GetProviderId(Constants.ProviderName), out var id))
             return [];
 

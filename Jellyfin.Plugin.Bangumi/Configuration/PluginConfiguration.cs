@@ -16,8 +16,34 @@ public enum EpisodeParserType
     AnitomySharp
 }
 
+public class LibraryBangumiSettings
+{
+    public bool Enabled { get; set; } = false;
+    public bool OfflineOnly { get; set; } = false;
+}
+
+/// <summary>
+/// XML-serializable key-value entry for per-library Bangumi settings.
+/// </summary>
+public class LibrarySettingsEntry
+{
+    public string LibraryId { get; set; } = string.Empty;
+    public bool Enabled { get; set; } = false;
+    public bool OfflineOnly { get; set; } = false;
+}
+
 public class PluginConfiguration : BasePluginConfiguration
 {
+    public bool Enabled { get; set; } = false;
+
+    public bool OfflineOnly { get; set; } = false;
+
+    /// <summary>
+    /// Per-library Bangumi settings. Keyed by library ItemId (GUID string).
+    /// Uses a List for XML serialization compatibility (Dictionary not supported).
+    /// </summary>
+    public List<LibrarySettingsEntry> LibrarySettings { get; set; } = [];
+
     public TranslationPreferenceType TranslationPreference { get; set; } = TranslationPreferenceType.Chinese;
 
     public TranslationPreferenceType PersonTranslationPreference { get; set; } = TranslationPreferenceType.Original;

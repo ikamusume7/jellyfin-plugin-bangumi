@@ -5,6 +5,31 @@
             <form id="bangumiConfigurationForm">
                 <div class="verticalSection">
                     <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">插件开关</h2>
+                    </div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="Enabled" is="emby-checkbox" type="checkbox"/>
+                        <span>启用 Bangumi 插件</span>
+                    </label>
+                    <div class="fieldDescription">关闭后插件将不会提供任何元数据，默认不启用。</div>
+                </div>
+                <div id="bangumi-enabled-options">
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="OfflineOnly" is="emby-checkbox" type="checkbox"/>
+                            <span>离线模式（仅使用本地数据）</span>
+                        </label>
+                        <div class="fieldDescription">
+                            启用后插件将完全不调用 Bangumi API，仅使用本地离线数据库（Archive）。<br>
+                            搜索、封面图片获取等依赖在线接口的功能将不可用。适合无网络环境或希望完全离线运行的场景。
+                        </div>
+                    </div>
+                </div>
+                <div id="bangumi-all-settings">
+                <div class="verticalSection">
+                    <div class="sectionTitleContainer flex align-items-center">
                         <h2 class="sectionTitle">账号授权</h2>
                     </div>
                 </div>
@@ -307,6 +332,7 @@
                         <i class="material-icons navigate_next"></i>
                     </a>
                 </div>
+                </div><!-- end bangumi-all-settings -->
                 <div class="submit-button-container">
                     <button class="raised button-submit block emby-button" is="emby-button" type="submit">
                         <span>保存</span>

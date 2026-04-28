@@ -27,8 +27,9 @@ public class AlbumProvider(BangumiApi api, Logger<AlbumProvider> log)
     public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var baseName = Path.GetFileName(info.Path);
         var result = new MetadataResult<MusicAlbum> { ResultLanguage = Constants.Language };
+        if (!Configuration.Enabled) return result;
+        var baseName = Path.GetFileName(info.Path);
 
         if (int.TryParse(info.ProviderIds.GetOrDefault(Constants.ProviderName), out var subjectId))
         {

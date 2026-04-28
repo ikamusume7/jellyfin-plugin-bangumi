@@ -28,6 +28,10 @@ public class EpisodeProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibra
     public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var result = new MetadataResult<Episode> { ResultLanguage = Constants.Language };
+        var (enabled, offlineOnly) = LibrarySettingsHelper.GetEffectiveSettings(info.Path, libraryManager);
+        if (!enabled) return result;
+        BangumiApi.SetOfflineOverride(offlineOnly);
         var localConfiguration = await LocalConfiguration.ForPath(info.Path);
 
         var context = new EpisodeParserContext(api, libraryManager, info, mediaSourceManager, Configuration, localConfiguration, cancellationToken);
@@ -46,8 +50,6 @@ public class EpisodeProvider(BangumiApi api, Logger<EpisodeProvider> log, ILibra
         {
             log.Error($"metadata for {info.Path} error: {e.Message}");
         }
-
-        var result = new MetadataResult<Episode> { ResultLanguage = Constants.Language };
 
         if (localConfiguration.Skip) return result;
 

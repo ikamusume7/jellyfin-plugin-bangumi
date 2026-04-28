@@ -93,7 +93,16 @@
             if (container.querySelector('#EpisodeParser')) {
                 updateEpisodeParserDisplay();
             }
+            updateEnabledDisplay();
         });
+    }
+
+    function updateEnabledDisplay() {
+        var enabled = container.querySelector('#Enabled').checked;
+        var enabledOptions = container.querySelector('#bangumi-enabled-options');
+        var allSettings = container.querySelector('#bangumi-all-settings');
+        if (enabledOptions) enabledOptions.style.display = enabled ? '' : 'none';
+        if (allSettings) allSettings.style.display = enabled ? '' : 'none';
     }
 
     function saveConfiguration() {
@@ -199,6 +208,10 @@
     container.querySelector('#EpisodeParser').addEventListener('change', function (e) {
         e.preventDefault();
         updateEpisodeParserDisplay();
+    });
+
+    container.querySelector('#Enabled').addEventListener('change', function (e) {
+        updateEnabledDisplay();
     });
 
     function updateEpisodeParserDisplay() {
